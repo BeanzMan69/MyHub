@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Hub</title>
+    <style>
+        body {
+            overflow: hidden;
+            margin: 0;
+            justify-content: center;
+            align-items: center;
+            background-color: rgb(83, 83, 83);
+            position: relative;
+            height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            height: auto;
+            padding: 10px;
+            color: aliceblue;
+            background-color: rgb(36, 36, 36)
+        }
+
+        header h1 {
+            margin-left: 30px;
+        }
+
+        .addButton {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+        }
+
+        .addButton button {
+            border-radius: 50%;
+            background-color: blueviolet;
+            color: aliceblue;
+            border: none;
+            font-size: 35px;
+            width: 60px;
+            height: 60px;
+            transition: 0.3s ease 0.1s;
+            cursor: pointer;
+        }
+
+        .addButton button:hover {
+            width: 70px;
+            height: 70px;
+            background-color: rgb(92, 24, 157);
+        }
+
+        .load {
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(40, 40, 40, 0.812);
+            z-index: 9999;
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .load2 {
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(40, 40, 40, 0.812);
+            z-index: 9999;
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .details {
+            border-radius: 30px;
+            background-color: aliceblue;
+            width: 500px;
+            max-width: 80%;
+            height: 400px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .details label {
+            font-size: 28px; 
+            display: block;
+            margin-bottom: 10px; 
+        }
+
+        .details input {
+            width: 80%;
+            max-width: 300px;
+            height: 45px;
+            border-radius: 20px;
+            font-size: 24px; 
+            margin-bottom: 20px; 
+        }
+
+        .details button {
+            width: 100px;
+            height: 50px;
+            font-size: 40px;
+            margin-top: 30px;
+            background-color: blueviolet;
+            border-radius: 10px;
+            color: white;
+            border: none;
+            transition: 0.3s ease 0.1s;
+            cursor: pointer;
+        }
+
+        .details button:hover {
+            width: 110px;
+            height: 60px;
+            background-color: rgb(92, 24, 157);
+        }
+
+        .shortCut {
+            width: 300px;
+            height: 250px;
+            border-radius: 30px;
+            text-align: center;
+            align-items: center;
+            background-color: rgba(40, 40, 40, 0.8);
+            margin-top: 10px;
+            display: inline-block; 
+            margin-right: 10px;
+            cursor: pointer;
+            z-index: 6;
+        }  
+
+        @keyframes smallMove {
+            0% {
+                width: 300px;
+                height: 250px;
+            }
+            50% {
+                width: 310px;
+                height: 260px;
+            }
+
+            100% {
+                width: 300px;
+                height: 250px;
+            }
+        }
+
+        .shortCut:hover {
+            animation: smallMove 3s ease infinite;
+        }
+
+        .shortCut iframe {
+            margin-top: 20px;
+            pointer-events: none;
+        }
+
+        .shareButton {
+            top: 20px;
+            right: 20px;
+            position: fixed;
+        }
+
+        .shareButton img {
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            transition: 0.3s ease 0.1s;
+            cursor: pointer;
+        }
+
+        .shareButton img:hover {
+            width: 70px;
+            height: 70px;
+            transform: rotate(360deg);
+        }
+
+        .shareButton button {
+            border-radius: 50%;
+            background: none;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>My Hub</h1>
+    </header>
+    <div class="addButton">
+        <button onclick="add()">+</button>
+    </div>
+    <div class="shareButton">
+        <button onclick="share()">
+            <img src="https://purepng.com/public/uploads/medium/share-icon-qvb.png" alt="Share">
+        </button>
+    </div>
+    <section class="load">
+        <div class="details">
+            <label>
+                Name:
+                <br>
+                <input type="text" id="detailsName">
+            </label>
+            <br>
+            <label>
+                ShortCut URL:
+                <br>
+                <input type="url" id="detailsUrl" placeholder="Start with https://">
+            </label>
+            <button onclick="go()">Go</button>
+        </div>
+    </section>
+    <section class="load2">
+        <h2>Shareable URL: </h2>
+        <h2 id="shareableURL"></h2>
+    </section>
+    <script>
+        function add() {
+            var load = document.querySelector('.load');
+
+            load.style.display = "block";
+        }
+
+        function go() {
+            var load = document.querySelector('.load');
+            var name = document.querySelector('#detailsName').value;
+            var url = document.querySelector('#detailsUrl').value;
+
+            var newShort = document.createElement('div');
+            newShort.classList.add('shortCut');
+
+            newShort.style.width = "300px";
+            newShort.style.height = "250px";
+            newShort.style.backgroundColor = "rgba(40, 40, 40)";
+            newShort.style.color = "white";
+            newShort.style.position = "relative";
+            newShort.style.marginTop = "20px";
+
+            var h2 = document.createElement('h2');
+            h2.textContent = name;
+
+            var iframeContainer = document.createElement('div');
+            iframeContainer.style.position = "relative";
+            iframeContainer.style.width = "100%";
+            iframeContainer.style.height = "100%";
+
+            var iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.style.width = "80%";
+            iframe.style.height = "50%";
+            iframe.style.border = "none";
+            iframe.style.borderRadius = "20px";
+            iframe.style.zIndex = "0";
+
+            newShort.appendChild(h2);
+            iframeContainer.appendChild(iframe);
+            newShort.appendChild(iframeContainer); 
+
+            newShort.addEventListener('click', function() {
+                window.open(url, '_blank');
+            });
+
+            document.body.appendChild(newShort);
+
+            document.querySelector('#detailsName').value = "";      //https://www.citypng.com/public/uploads/preview/hd-white-hand-drawn-line-art-arrow-png-31624582695memkc5qzpc.png
+            document.querySelector('#detailsUrl').value = "";
+
+            load.style.display = "none";
+        }
+
+        function share() {
+            var shareData = {
+                // Gather user data to share
+                // For example, you might want to collect all the added shortcut URLs
+                shortcuts: Array.from(document.querySelectorAll('.shortCut iframe')).map(iframe => iframe.src)
+            };
+
+            // Convert data to JSON and encode it
+            var encodedData = encodeURIComponent(JSON.stringify(shareData));
+
+            // Generate a random string (you can use a more robust method)
+            var randomString = Math.random().toString(36).substring(7);
+
+            // Construct the shareable URL with the random string and encoded data
+            var shareableURL = window.location.href + '?data=' + randomString + '&share=' + encodedData;
+
+            // Display the shareable URL in the "shareableURL" h2 element
+            var shareableURLElement = document.getElementById("shareableURL");
+            shareableURLElement.textContent = 'Shareable URL: ' + shareableURL;
+
+            // Show the load2 section to display the shareable URL
+            var load2 = document.querySelector(".load2");
+            load2.style.display = "block";
+
+            // Implement actual sharing logic using this shareable URL as needed
+        }
+
+        // Retrieving and processing shared data
+        (function() {
+            // Get the query parameters from the URL
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+
+            // Check if 'share' parameter exists in the URL
+            if (urlParams.has('share')) {
+                // Retrieve the encoded data
+                const encodedData = urlParams.get('share');
+
+                // Decode and parse the encoded data
+                const decodedData = decodeURIComponent(encodedData);
+                const sharedData = JSON.parse(decodedData);
+
+                // Display the shared data (for demonstration, showing in 'sharedData' h2 element)
+                const sharedDataElement = document.getElementById("sharedData");
+                sharedDataElement.textContent = 'Shared Data: ' + JSON.stringify(sharedData);
+
+                // Process the shared data as needed
+                // For example, you might want to add the shared shortcuts back to the page
+                if (sharedData.shortcuts && sharedData.shortcuts.length > 0) {
+                    sharedData.shortcuts.forEach(url => {
+                        // Add the shortcuts back to the page (you need to implement this part)
+                        // Example: create 'div' elements and append them to the page
+                    });
+                }
+            }
+        })();
+    </script>
+</body>
+</html>
