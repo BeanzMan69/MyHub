@@ -1,18 +1,20 @@
-<!DOCTYPE html>
+what could I add too my website? <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap">
     <title>My Hub</title>
     <style>
         body {
-            overflow: hidden;
+            overflow-x: hidden;
             margin: 0;
             justify-content: center;
             align-items: center;
             background-color: rgb(83, 83, 83);
             position: relative;
             height: 100vh;
+            font-family: 'Roboto', sans-serif;
         }
 
         header {
@@ -31,6 +33,7 @@
             position: absolute;
             bottom: 30px;
             right: 30px;
+            position: fixed;
         }
 
         .addButton button {
@@ -186,6 +189,47 @@
             background: none;
             border: none;
         }
+
+        .details2 {
+            border-radius: 30px;
+            background-color: aliceblue;
+            width: 800px;
+            max-width: 80%;
+            height: 500px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .details2 h2 {
+            font-size: 28px; /* Adjust font size as needed */
+            word-wrap: break-word; /* Wrap long words onto the next line */
+            word-break: break-word; /* Break words to prevent overflow */
+            overflow: hidden;
+        }
+
+        .details2 button {
+            width: 100px;
+            height: 50px;
+            font-size: 40px;
+            margin-top: 30px;
+            background-color: blueviolet;
+            border-radius: 10px;
+            color: white;
+            border: none;
+            transition: 0.3s ease 0.1s;
+            cursor: pointer;
+        }
+
+        .details2 button:hover {
+            width: 110px;
+            height: 60px;
+            background-color: rgb(92, 24, 157);
+        }
     </style>
 </head>
 <body>
@@ -217,13 +261,15 @@
         </div>
     </section>
     <section class="load2">
-        <h2>Shareable URL: </h2>
-        <h2 id="shareableURL"></h2>
+        <div class="details2">
+            <h2>Shareable URL: </h2>
+            <h2 id="shareableURL"></h2>
+            <button onclick="shareBye()">Ok</button>
+        </div>
     </section>
     <script>
         function add() {
             var load = document.querySelector('.load');
-
             load.style.display = "block";
         }
 
@@ -232,17 +278,30 @@
             var name = document.querySelector('#detailsName').value;
             var url = document.querySelector('#detailsUrl').value;
 
+            var shortcut = {
+                name: name,
+                url: url
+            };
+
+            var shortcuts = JSON.parse(localStorage.getItem('shortcuts')) || [];
+            // Clear existing shortcuts from localStorage before saving the new ones
+            localStorage.removeItem('shortcuts');
+            shortcuts.push(shortcut);
+            localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+
+            createShortcutElement(name, url);
+
+            document.querySelector('#detailsName').value = "";
+            document.querySelector('#detailsUrl').value = "";
+            load.style.display = "none";
+        }
+
+        function createShortcutElement(name, url) {
             var newShort = document.createElement('div');
             newShort.classList.add('shortCut');
 
-            newShort.style.width = "300px";
-            newShort.style.height = "250px";
-            newShort.style.backgroundColor = "rgba(40, 40, 40)";
-            newShort.style.color = "white";
-            newShort.style.position = "relative";
-            newShort.style.marginTop = "20px";
-
             var h2 = document.createElement('h2');
+            h2.style.color = "white";
             h2.textContent = name;
 
             var iframeContainer = document.createElement('div');
@@ -258,78 +317,70 @@
             iframe.style.borderRadius = "20px";
             iframe.style.zIndex = "0";
 
-            newShort.appendChild(h2);
             iframeContainer.appendChild(iframe);
-            newShort.appendChild(iframeContainer); 
+            newShort.appendChild(h2);
+            newShort.appendChild(iframeContainer);
 
-            newShort.addEventListener('click', function() {
+            newShort.addEventListener('click', function () {
                 window.open(url, '_blank');
             });
 
             document.body.appendChild(newShort);
-
-            document.querySelector('#detailsName').value = "";      //https://www.citypng.com/public/uploads/preview/hd-white-hand-drawn-line-art-arrow-png-31624582695memkc5qzpc.png
-            document.querySelector('#detailsUrl').value = "";
-
-            load.style.display = "none";
         }
 
         function share() {
-            var shareData = {
-                // Gather user data to share
-                // For example, you might want to collect all the added shortcut URLs
-                shortcuts: Array.from(document.querySelectorAll('.shortCut iframe')).map(iframe => iframe.src)
-            };
+            localStorage.removeItem('shortcuts');
 
-            // Convert data to JSON and encode it
-            var encodedData = encodeURIComponent(JSON.stringify(shareData));
+            var shortcuts = Array.from(document.querySelectorAll('.shortCut'));
+            var shortcutsData = [];
 
-            // Generate a random string (you can use a more robust method)
+            shortcuts.forEach(shortcut => {
+                var name = shortcut.querySelector('h2').textContent;
+                var iframeSrc = shortcut.querySelector('iframe').src;
+
+                var singleShortcut = {
+                    name: name,
+                    url: iframeSrc
+                };
+
+                shortcutsData.push(singleShortcut);
+            });
+
+            localStorage.setItem('shortcuts', JSON.stringify(shortcutsData));
+
+            var encodedURLs = encodeURIComponent(JSON.stringify(shortcutsData));
             var randomString = Math.random().toString(36).substring(7);
+            var shareableURL = window.location.href + '?data=' + randomString + '&shortcuts=' + encodedURLs;
 
-            // Construct the shareable URL with the random string and encoded data
-            var shareableURL = window.location.href + '?data=' + randomString + '&share=' + encodedData;
-
-            // Display the shareable URL in the "shareableURL" h2 element
             var shareableURLElement = document.getElementById("shareableURL");
             shareableURLElement.textContent = 'Shareable URL: ' + shareableURL;
 
-            // Show the load2 section to display the shareable URL
             var load2 = document.querySelector(".load2");
             load2.style.display = "block";
-
-            // Implement actual sharing logic using this shareable URL as needed
         }
 
-        // Retrieving and processing shared data
-        (function() {
-            // Get the query parameters from the URL
+        (function () {
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
 
-            // Check if 'share' parameter exists in the URL
-            if (urlParams.has('share')) {
-                // Retrieve the encoded data
-                const encodedData = urlParams.get('share');
+            if (urlParams.has('shortcuts')) {
+                const encodedURLs = urlParams.get('shortcuts');
+                const decodedURLs = decodeURIComponent(encodedURLs);
+                const shortcuts = JSON.parse(decodedURLs);
 
-                // Decode and parse the encoded data
-                const decodedData = decodeURIComponent(encodedData);
-                const sharedData = JSON.parse(decodedData);
-
-                // Display the shared data (for demonstration, showing in 'sharedData' h2 element)
-                const sharedDataElement = document.getElementById("sharedData");
-                sharedDataElement.textContent = 'Shared Data: ' + JSON.stringify(sharedData);
-
-                // Process the shared data as needed
-                // For example, you might want to add the shared shortcuts back to the page
-                if (sharedData.shortcuts && sharedData.shortcuts.length > 0) {
-                    sharedData.shortcuts.forEach(url => {
-                        // Add the shortcuts back to the page (you need to implement this part)
-                        // Example: create 'div' elements and append them to the page
+                if (shortcuts && shortcuts.length > 0) {
+                    shortcuts.forEach(shortcut => {
+                        createShortcutElement(shortcut.name, shortcut.url);
                     });
                 }
             }
         })();
+
+        function shareBye() {
+            const load2 = document.querySelector(".load2");
+
+            load2.style.display = "none";
+        }
     </script>
 </body>
 </html>
