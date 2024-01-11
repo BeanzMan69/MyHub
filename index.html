@@ -17,16 +17,22 @@
             font-family: 'Roboto', sans-serif;
         }
 
+        body.dark-mode {
+            background-color: aliceblue;
+        }
+
         header {
             width: 100%;
             height: auto;
             padding: 10px;
             color: aliceblue;
-            background-color: rgb(36, 36, 36)
+            background-color: rgb(36, 36, 36);
+            display: flex;
         }
 
         header h1 {
             margin-left: 30px;
+            cursor: pointer;
         }
 
         .addButton {
@@ -196,7 +202,7 @@
             background-color: aliceblue;
             width: 800px;
             max-width: 80%;
-            height: 500px;
+            height: fit-content;
             position: absolute;
             top: 50%;
             left: 50%;
@@ -254,11 +260,98 @@
         .menu p:hover {
             text-decoration: underline;
         }
+
+        #goToMenu {
+            height: 70px;
+            border-radius: 50%;
+            border: none;
+            transition: 0.5s ease-in-out 0.1s;
+            display: inline-block;
+            margin-top: 7px;
+            width: 70px;
+            cursor: pointer;
+            opacity: 0.5;
+        }
+
+        header h1:hover + #goToMenu {
+            opacity: 10;
+        }
+
+        #goToMenu:hover {
+            opacity: 10;
+        }
+
+        header button {
+            background-color: transparent;
+            border: none;
+            width: min-content;
+            height: min-content;
+        }
+
+        .mainMenu {
+            border-radius: 30px;
+            background-color: aliceblue;
+            width: 500px;
+            max-width: 80%;
+            height: 400px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .load3 {
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(40, 40, 40, 0.812);
+            z-index: 9999;
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .mainMenu button {
+            width: 100px;
+            height: 50px;
+            font-size: 40px;
+            margin-top: 250px;
+            background-color: blueviolet;
+            border-radius: 10px;
+            color: white;
+            border: none;
+            transition: 0.3s ease 0.1s;
+            cursor: pointer;
+            margin: 0 auto;
+        }
+
+        .mainMenu button:hover {
+            width: 110px;
+            height: 60px;
+            background-color: rgb(92, 24, 157);
+        }
+
+        #darkMode {
+            width: 50px;
+            height: 50px;
+            left: 50px;
+            margin-left: 45%;
+        } 
     </style>
 </head>
 <body>
     <header>
         <h1>My Hub</h1>
+        <button onclick="menuTime()">
+            <img src="http://pixsector.com/cache/db444a5d/av3408bf9a8e4c42e82ae.png" alt="menu" id="goToMenu">
+        </button>
     </header>
     <div class="addButton">
         <button onclick="add()">+</button>
@@ -291,10 +384,46 @@
             <button onclick="shareBye()">Ok</button>
         </div>
     </section>
+    <section class="load3">
+        <div class="mainMenu">
+            <label for="darkMode">Dark Mode Toggle <br> (Checked is light mode)</label>
+            <input type="checkbox" id="darkMode" onchange="toggleDarkMode()">
+            <button onclick="menuBye()">Ok</button>      
+        </div>
+    </section>
     <script>
         function add() {
             var load = document.querySelector('.load');
             load.style.display = "block";
+        }
+
+        function saveShortcutsToLocalStorage(shortcutsData) {
+            localStorage.setItem('shortcuts', JSON.stringify(shortcutsData));
+        }
+
+        function menuTime() {
+            var main = document.querySelector('.load3');
+
+            main.style.display = "flex";
+        }
+
+        function menuBye() {
+            var main = document.querySelector('.load3');
+
+            main.style.display = "none";
+        }
+
+        function toggleDarkMode() {
+            var checkbox = document.getElementById('darkMode');
+            var body = document.body;
+
+            if (checkbox.checked) {
+                body.classList.add('dark-mode');
+                localStorage.setItem('dark', 'on');
+            } else {
+                body.classList.remove('dark-mode');
+                localStorage.setItem('dark', 'off');
+            }
         }
 
         function go() {
@@ -371,10 +500,19 @@
 
                 var deleteOption = document.createElement('p');
                 deleteOption.textContent = 'Delete';
+
                 deleteOption.addEventListener('click', function(event) {
-                    event.stopPropagation(); 
+                    event.stopPropagation();
                     if (newShort.parentNode) {
                         newShort.parentNode.removeChild(newShort);
+
+                        var storedShortcuts = JSON.parse(localStorage.getItem('shortcuts')) || [];
+
+                        storedShortcuts = storedShortcuts.filter(shortcut => {
+                            return !(shortcut.name === name && shortcut.url === url);
+                        });
+
+                        saveShortcutsToLocalStorage(storedShortcuts);
                     }
                     menu.remove();
                 });
@@ -390,15 +528,14 @@
                 });
             });
 
+
             document.body.appendChild(newShort);
         }
 
         function share() {
-            localStorage.removeItem('shortcuts');
-
-            var shortcuts = Array.from(document.querySelectorAll('.shortCut'));
             var shortcutsData = [];
 
+            var shortcuts = Array.from(document.querySelectorAll('.shortCut'));
             shortcuts.forEach(shortcut => {
                 var name = shortcut.querySelector('h2').textContent;
                 var iframeSrc = shortcut.querySelector('iframe').src;
@@ -411,17 +548,27 @@
                 shortcutsData.push(singleShortcut);
             });
 
-            localStorage.setItem('shortcuts', JSON.stringify(shortcutsData));
+            saveShortcutsToLocalStorage(shortcutsData);
 
             var encodedURLs = encodeURIComponent(JSON.stringify(shortcutsData));
             var randomString = Math.random().toString(36).substring(7);
             var shareableURL = window.location.href + '?data=' + randomString + '&shortcuts=' + encodedURLs;
 
             var shareableURLElement = document.getElementById("shareableURL");
-            shareableURLElement.textContent = 'Shareable URL: ' + shareableURL;
+            shareableURLElement.textContent = 'Copy This: ' + shareableURL;
 
             var load2 = document.querySelector(".load2");
             load2.style.display = "block";
+        }
+
+        function loadShortcutsFromLocalStorage() {
+            const storedShortcuts = JSON.parse(localStorage.getItem('shortcuts'));
+
+            if (storedShortcuts && storedShortcuts.length > 0) {
+                storedShortcuts.forEach(shortcut => {
+                    createShortcutElement(shortcut.name, shortcut.url);
+                });
+            }
         }
 
         (function () {
@@ -446,6 +593,45 @@
 
             load2.style.display = "none";
         }
+
+        window.onload = function () {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+
+            // Get the base URL of the current page
+            const currentURL = window.location.href.split('?')[0];
+
+            if (urlParams.has('shortcuts')) {
+                const encodedURLs = urlParams.get('shortcuts');
+                const decodedURLs = decodeURIComponent(encodedURLs);
+                const shortcuts = JSON.parse(decodedURLs);
+
+                // Check if the base URL of the shared URL matches the current page's base URL
+                const sharedURL = document.createElement('a');
+                sharedURL.href = shortcuts[0].url; // Assuming the first shared URL is enough for comparison
+                const sharedBaseURL = sharedURL.href.split('?')[0];
+
+                if (sharedBaseURL === currentURL) {
+                shortcuts.forEach(shortcut => {
+                    createShortcutElement(shortcut.name, shortcut.url);
+                });
+                }
+            } else {
+                loadShortcutsFromLocalStorage(); // Load user's shortcuts from localStorage
+            }
+
+            const body = document.body;
+            const darkMode = localStorage.getItem('dark');
+            const darkModeCheckbox = document.getElementById('darkMode'); // Get the checkbox element
+
+            if (darkMode === 'on') {
+                body.classList.add('dark-mode');
+                darkModeCheckbox.checked = true; // Set the checkbox as checked
+            } else {
+                body.classList.remove('dark-mode');
+                darkModeCheckbox.checked = false; // Ensure checkbox is unchecked if 'dark' is 'off'
+            }
+        };
     </script>
 </body>
 </html>
